@@ -1,0 +1,7 @@
+job_queue: maas-x86-node
+provision_data:
+    distro: xenial
+test_data:
+    test_cmds:
+        - ssh ubuntu@{device_ip} which kvm
+        - ssh ubuntu@{device_ip} cat /proc/cpuinfo

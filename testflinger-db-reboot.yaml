@@ -1,0 +1,10 @@
+job_queue: dragonboard
+provision_data:
+    channel: stable
+test_data:
+    test_cmds:
+        - git clone https://github.com/snapcore/snapd
+        - curl -s -O https://niemeyer.s3.amazonaws.com/spread-amd64.tar.gz && tar xzvf spread-amd64.tar.gz
+        - snapd/tests/lib/external/prepare-ssh.sh {device_ip} 22 ubuntu
+        - ssh -q -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ubuntu@{device_ip} sudo snap refresh --edge core
+        - cd snapd && export SPREAD_EXTERNAL_ADDRESS={device_ip}:22 && ../spread -v external:ubuntu-core-16-arm-64:tests/main/failover external:ubuntu-core-16-arm-64:tests/main/ubuntu-core-upgrade external:ubuntu-core-16-arm-64:tests/main/ubuntu-core-reboot
