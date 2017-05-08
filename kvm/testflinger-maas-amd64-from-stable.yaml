@@ -1,4 +1,5 @@
-job_queue: maas-x86-node
+
+job_queue: intel-gfx
 provision_data:
     distro: xenial
 test_data:
@@ -12,10 +13,8 @@ test_data:
         - ssh ubuntu@{device_ip} genisoimage -volid cidata -joliet -rock -o assertions.disk snapd/tests/lib/assertions/auto-import.assert
         - ssh ubuntu@{device_ip} sudo systemd-run --unit sut-vm /usr/bin/qemu-system-x86_64 -m 1024 -nographic -net nic,model=virtio -net user,hostfwd=tcp::8022-:22 -drive file=/tmp/work-dir/ubuntu-core.img,if=virtio,cache=none -drive file=/home/ubuntu/assertions.disk,if=virtio,cache=none
         - ssh ubuntu@{device_ip} sleep 60
-        - ssh ubuntu@{device_ip} mkdir -p /home/ubuntu/.ssh && sudo chown ubuntu:ubuntu /home/ubuntu/.ssh && chmod -R u+w /home/ubuntu/.ssh && printf "Host sut-vm\n    ProxyCommand sshpass -p ubuntu ssh -p 8022 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -W user1@localhost" >> /home/ubuntu/.ssh/config
-        - ssh ubuntu@{device_ip} "ssh sut-vm sudo snap refresh --beta core"
-        - ssh ubuntu@{device_ip} "ssh sut-vm sudo adduser --extrausers --quiet --disabled-password --gecos '' test"
-        - ssh ubuntu@{device_ip} "ssh sut-vm echo test:ubuntu | sudo chpasswd"
-        - ssh ubuntu@{device_ip} "ssh sut-vm echo 'test ALL=(ALL) NOPASSWD:ALL' | sudo tee /etc/sudoers.d/test-user"
+        - ssh ubuntu@{device_ip} sshpass -p ubuntu ssh -p 8022 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no user1@localhost sudo adduser --extrausers --quiet --disabled-password --gecos '' test
+        - ssh ubuntu@{device_ip} sshpass -p ubuntu ssh -p 8022 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no user1@localhost echo test:ubuntu | sudo chpasswd
+        - ssh ubuntu@{device_ip} sshpass -p ubuntu ssh -p 8022 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no user1@localhost echo 'test ALL=(ALL) NOPASSWD:ALL' | sudo tee /etc/sudoers.d/test-user
         - ssh ubuntu@{device_ip} "curl -s -O https://niemeyer.s3.amazonaws.com/spread-amd64.tar.gz && tar xzvf spread-amd64.tar.gz && rm -f spread-amd64.tar.gz && mv spread /tmp/work-dir"
         - ssh ubuntu@{device_ip} "cd snapd && SPREAD_EXTERNAL_ADDRESS=localhost:8022 /tmp/work-dir/spread -v external:ubuntu-core-16-64"
