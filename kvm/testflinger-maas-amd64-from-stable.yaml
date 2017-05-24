@@ -10,7 +10,12 @@ test_data:
         - ssh ubuntu@{device_ip} sudo snap install --devmode --beta ubuntu-image
         - ssh ubuntu@{device_ip} sudo /snap/bin/ubuntu-image --image-size 3G snapd/tests/lib/assertions/nested-amd64.model --channel stable --output ubuntu-core.img
         - ssh ubuntu@{device_ip} mv ubuntu-core.img /tmp/work-dir
-        - ssh ubuntu@{device_ip} genisoimage -volid cidata -joliet -rock -o assertions.disk snapd/tests/lib/assertions/auto-import.assert
+        - ssh ubuntu@{device_ip} dd if=/dev/null of=assertions.disk bs=1M seek=1
+        - ssh ubuntu@{device_ip} mkfs.ext4 -F assertions.disk
+        - ssh ubuntu@{device_ip} sudo mkdir /mnt/assertions
+        - ssh ubuntu@{device_ip} sudo mount -t ext4 -o loop assertions.disk /mnt/assertions
+        - ssh ubuntu@{device_ip} cp snapd/tests/lib/assertions/auto-import.assert /mnt/assertions
+        - ssh ubuntu@{device_ip} sudo umount /mnt/assertions
         - ssh ubuntu@{device_ip} sudo systemd-run --unit sut-vm /usr/bin/qemu-system-x86_64 -m 1024 -nographic -net nic,model=virtio -net user,hostfwd=tcp::8022-:22 -drive file=/tmp/work-dir/ubuntu-core.img,if=virtio,cache=none -drive file=/home/ubuntu/assertions.disk,if=virtio,cache=none
         - ssh ubuntu@{device_ip} sleep 60
         - ssh ubuntu@{device_ip} sshpass -p ubuntu ssh -p 8022 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no user1@localhost sudo adduser --extrausers --quiet --disabled-password --gecos '' test
